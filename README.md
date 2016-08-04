@@ -8,11 +8,12 @@ This project is based on the Google [HTML5 IMA SDK](https://developers.google.co
     * Condensed code into one function 'googleHTML5', with a 'hostApplication' as placeholder for my client's project.
 
 ### Using Function
-Include the code with script reference in head or bottom of body element:
+Include the Google IMA SDK and the demo code:
 ```html
-<script type="text/javascript" src="googleAds.js"></script>
+<script type="text/javascript" src="path_to_googleAds.js"></script>
+<script type="text/javascript" src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>
 ```
-Then in your code you invoke the function:
+Then you invoke the function:
 ```javascript
     function googleHTML5(adTag, adContainer, callback)
 ```

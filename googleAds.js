@@ -140,7 +140,7 @@ function googleHTML5(adTag, adContainer, callback) {
     }
 
     function onContentPauseRequested() {
-        //videoContent.pause();
+        // videoContent.pause();
         // This function is where you should setup UI for showing ads (e.g.
         // display ad timer countdown, disable seeking etc.)
         // setupUIForAds();
