@@ -2,20 +2,6 @@
 // https://github.com/googleads/googleads-ima-html5/blob/master/simple/ads.js
 // but removing the need for Google to have control of the video content of publisher page
 
-/*TODO make a google scoper that will see if the hosting page has the google IMA SDK already, if not, to add it.*/
-/*the rationale would be the capacity to just call googleHTML5 even without getting the google IMA in the main page*/
-var googletag = googletag || {};
-googletag.cmd = googletag.cmd || [];
-(function() {
-    var gads = document.createElement('script');
-    gads.async = true;
-    gads.type = 'text/javascript';
-    gads.src = '//www.googletagservices.com/tag/js/gpt.js';
-    var node = document.getElementsByTagName('script')[0];
-    node.parentNode.insertBefore(gads, node);
-})();
-
-
 function googleHTML5(adTag, adContainer, callback) {
     // just load-up and play an ad, standalone.
     var adsManager;
@@ -27,28 +13,51 @@ function googleHTML5(adTag, adContainer, callback) {
             'application know that the ad is done playing?');
     };
 
-    (function scoper(){
+    function scoper( success, failure ){
         var scripts = document.getElementsByTagName('script');
         var script;
         for( script = 0; script < scripts.length; script += 1){
             console.log(scripts[script].src);
             if( scripts[script].src.includes('imasdk.googleapis.com/js/sdkloader') ){
                 console.log('has google sdk');
-                break;
+                return success();
             }
         }
+
         var gsdk = document.createElement('script');
         gsdk.async = true;
         gsdk.type = 'text/javascript';
-        gsdk.src = '//imasdk.googleapis.com/js/sdkloader/ima3.js';
+        gsdk.src = 'http://imasdk.googleapis.com/js/sdkloader/ima3.js';
         var node = document.getElementsByTagName('script')[0];
         node.parentNode.insertBefore(gsdk, node);
-    })();
 
-    function init() {
+        var googleCounter = 200;
+        var googleWait = setInterval(function(){
+            try{
+                if( google.ima ){
+                    console.log('google ima sdk found');
+                    clearInterval( googleWait );
+                    success();
+                }
+                else if( googleCounter < 0){
+                    clearInterval( googleWait );
+                    console.error('google ima sdk unavailable for 2 seconds after injection');
+                    failure();
+                }
+                else{
+                    console.log('waiting on google...');
+                    googleCounter -= 1;
+                }
+            }
+            catch( e ){
+            }
+        }, 10);
+    }
+
+    function engageSDK(){
         // Create the ad display container.
-        adDisplayContainer = new google.ima.AdDisplayContainer(adContainer);
-        adsLoader = new google.ima.AdsLoader(adDisplayContainer);
+        adDisplayContainer = new google.ima.AdDisplayContainer( adContainer );
+        adsLoader = new google.ima.AdsLoader( adDisplayContainer );
         // Listen and respond to ads loaded and error events.
         adsLoader.addEventListener(
             google.ima.AdsManagerLoadedEvent.Type.ADS_MANAGER_LOADED,
@@ -72,6 +81,13 @@ function googleHTML5(adTag, adContainer, callback) {
         adsRequest.nonLinearAdSlotHeight = 150;
 
         adsLoader.requestAds(adsRequest);
+    }
+
+    function init() {
+        scoper( engageSDK,
+        function(){
+            console.log('sucks to be you!');
+        });
     }
 
     function playAds() {
@@ -135,7 +151,7 @@ function googleHTML5(adTag, adContainer, callback) {
                 if (!ad.isLinear()) {
                     // Position AdDisplayContainer correctly for overlay.
                     // Use ad.width and ad.height.
-                    videoContent.play();
+                    //videoContent.play();
                 }
                 break;
             case google.ima.AdEvent.Type.STARTED:
@@ -184,7 +200,6 @@ function googleHTML5(adTag, adContainer, callback) {
         // implement this function when necessary.
         // setupUIForContent();
     }
-
     init();
 }
 
