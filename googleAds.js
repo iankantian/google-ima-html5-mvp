@@ -86,7 +86,7 @@ function googleHTML5(adTag, adContainer, callback) {
     function init() {
         scoper( engageSDK,
         function(){
-            console.log('sucks to be you!');
+            console.log('failure to find or inject Google IMA SDK');
         });
     }
 
