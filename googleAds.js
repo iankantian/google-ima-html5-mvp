@@ -3,6 +3,18 @@
 // but removing the need for Google to have control of the video content of publisher page
 
 /*TODO make a google scoper that will see if the hosting page has the google IMA SDK already, if not, to add it.*/
+/*the rationale would be the capacity to just call googleHTML5 even without getting the google IMA in the main page*/
+var googletag = googletag || {};
+googletag.cmd = googletag.cmd || [];
+(function() {
+    var gads = document.createElement('script');
+    gads.async = true;
+    gads.type = 'text/javascript';
+    gads.src = '//www.googletagservices.com/tag/js/gpt.js';
+    var node = document.getElementsByTagName('script')[0];
+    node.parentNode.insertBefore(gads, node);
+})();
+
 
 function googleHTML5(adTag, adContainer, callback) {
     // just load-up and play an ad, standalone.
@@ -14,6 +26,24 @@ function googleHTML5(adTag, adContainer, callback) {
         console.log('googleHTML5; no callback given, how will the host ' +
             'application know that the ad is done playing?');
     };
+
+    (function scoper(){
+        var scripts = document.getElementsByTagName('script');
+        var script;
+        for( script = 0; script < scripts.length; script += 1){
+            console.log(scripts[script].src);
+            if( scripts[script].src.includes('imasdk.googleapis.com/js/sdkloader') ){
+                console.log('has google sdk');
+                break;
+            }
+        }
+        var gsdk = document.createElement('script');
+        gsdk.async = true;
+        gsdk.type = 'text/javascript';
+        gsdk.src = '//imasdk.googleapis.com/js/sdkloader/ima3.js';
+        var node = document.getElementsByTagName('script')[0];
+        node.parentNode.insertBefore(gsdk, node);
+    })();
 
     function init() {
         // Create the ad display container.
