@@ -220,5 +220,8 @@ function hostApplication() {
             console.error('videoContent; ', e);
         }
     }
-    googleHTML5(adTagUrl, ad_container, hostCallBack);
+   // googleHTML5(adTagUrl, ad_container, hostCallBack);
+
+    var googleAds = new myIMA(adTagUrl, ad_container, hostCallBack);
+    googleAds.init();
 }
