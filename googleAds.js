@@ -225,8 +225,8 @@ function hostApplication() {
 
     var googleAds = new myIMA(adTagUrl, ad_container, hostCallBack);
     googleAds.init();
-
-    document.getElementById('playButton').addEventListener('click', function(){
-        googleAds.play();
-    }, false);
+    //
+    //document.getElementById('playButton').addEventListener('click', function(){
+    //    googleAds.play();
+    //}, false);
 }

@@ -94,7 +94,7 @@ myIMA.prototype.loader = function () {
 };
 
 myIMA.prototype.resume = function () {
-    console.log('myIMA; resume;');
+    console.log('myIMA; resume;', this, this.callback_);
     // go back to control via your app.
     this.callback_();
 };
@@ -103,13 +103,21 @@ myIMA.prototype.resume = function () {
 myIMA.prototype.manage = function ( adsManagerLoadedEvent ) {
     var self = this;
     console.log('manage and this is', this);
-    this.adsManager = adsManagerLoadedEvent.getAdsManager();
+    var boundResume = function(){
+        self.resume.call(self);
+    };
+    var boundOnAdError = function(){
+        self.onAdError.call(self);
+    };
+    this.adsManager = adsManagerLoadedEvent.getAdsManager( this.video_);
     this.adsManager.addEventListener(
         google.ima.AdErrorEvent.Type.AD_ERROR,
-        self.onAdError);
+        boundOnAdError
+    );
     this.adsManager.addEventListener(
         google.ima.AdEvent.Type.CONTENT_RESUME_REQUESTED,
-        self.resume);
+        boundResume
+    );
     try {
         // Initialize the ads manager. Ad rules playlist will start at this time.
         this.adsManager.init(640, 360, google.ima.ViewMode.NORMAL);
