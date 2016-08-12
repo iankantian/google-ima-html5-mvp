@@ -17,13 +17,47 @@
 <button id="playButton">Play</button>
 <!--<script type="text/javascript" src="//imasdk.googleapis.com/js/sdkloader/ima3_debug.js"></script>-->
 <!--<script type="text/javascript" src="//imasdk.googleapis.com/js/sdkloader/ima3.js"></script>-->
-<script type="text/javascript" src="googleAds.js"></script>
 <script type="text/javascript" src="myIMA.js"></script>
 <script>
-    var application = null;
     window.onload = function () {
         hostApplication();
     };
+
+    // hostApplication is the main javascript you run in your application
+    function hostApplication() {
+        // here we define where Google's SDK will get the advertisements, here's a test document they use:
+        var adTagUrl = 'https://pubads.g.doubleclick.net/gampad/ads?' +
+                'sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&' +
+                'impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&' +
+                'cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear&correlator=';
+        // here is where the ad container is grabbed.  This is where the ad should play.  Google recommends that the
+        // ad should cover over the video content.  That is determined here by css.  We could inject that based on
+        // the contentElement's css, however, that would make the videoContent a MANDATORY part of using this code.
+        // for my own reasons I have that be optional.
+        var ad_container = document.getElementById('adContainer');
+
+        var videoContent = document.getElementById('contentElement');
+
+        // this function is what you want google to do after it gets done playing an ad
+        function hostCallBack() {
+            try {
+                videoContent.play();
+            }
+            catch (e) {
+                console.error('videoContent; ', e);
+            }
+        }
+
+        // Actual use of the code:
+        var googleAds = new myIMA(adTagUrl, ad_container, hostCallBack);
+//        googleAds.init();
+
+        var play = document.getElementById('playButton');
+        play.addEventListener('click', function(){
+            // here is when the ad will play:
+            googleAds.play()
+        }, false);
+    }
 </script>
 </body>
 </html>

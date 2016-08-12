@@ -6,11 +6,14 @@
  */
 
 var myIMA = function (adTag, adContainer, callback) {
+    // this is a fake video object, for all Google knows your content is 1 second long
+    // and is permanently set to 1/2 seconds in playtime.
     this.video_ = {
         duration: 1.00,
         currentTime: 0.50
     };
     this.adTag_ = adTag ? adTag : '';
+    this.oldAdTag_ = '';
     this.adContainer_ = adContainer ? adContainer : function() {
         // at least attempt to make something!
         var emptyDiv = document.createElement('div');
@@ -18,6 +21,12 @@ var myIMA = function (adTag, adContainer, callback) {
         return emptyDiv;
     };
     this.callback_ = callback ? callback : function (){};
+    this.init();
+};
+
+myIMA.prototype.updateTag = function ( newTag ) {
+    this.oldAdTag_ = this.adTag_;
+    this.adTag_ = newTag;
 };
 
 myIMA.prototype.sdkLoader = function (success, failure) {
@@ -68,7 +77,6 @@ myIMA.prototype.sdkLoader = function (success, failure) {
 };
 
 myIMA.prototype.contain = function () {
-    console.log('contain and this is', this);
     this.adDisplayContainer =
         new google.ima.AdDisplayContainer(this.adContainer_, this.video_);
     // Must be done as the result of a user action on mobile
@@ -76,7 +84,6 @@ myIMA.prototype.contain = function () {
 };
 
 myIMA.prototype.loader = function () {
-    console.log('loader and this is', this);
     var self = this;
     var boundManaged = function( event ){
       self.manage.call(self, event);
@@ -94,7 +101,6 @@ myIMA.prototype.loader = function () {
 };
 
 myIMA.prototype.resume = function () {
-    console.log('myIMA; resume;', this, this.callback_);
     // go back to control via your app.
     this.callback_();
 };
@@ -102,7 +108,6 @@ myIMA.prototype.resume = function () {
 
 myIMA.prototype.manage = function ( adsManagerLoadedEvent ) {
     var self = this;
-    console.log('manage and this is', this);
     var boundResume = function(){
         self.resume.call(self);
     };
@@ -132,42 +137,49 @@ myIMA.prototype.manage = function ( adsManagerLoadedEvent ) {
 };
 
 myIMA.prototype.onAdError = function (adErrorEvent) {
-    console.log('onAdError and this is', this);
-    console.log(adErrorEvent.getError());
-    this.adsManager.destroy();
+    //console.log('Google Ad Error:', adErrorEvent.getError());
+    try{
+        this.adsManager.destroy();
+    }
+    catch(e){
+
+    }
 };
 
 myIMA.prototype.play = function () {
-    console.log('play and this is', this);
-    //this.adsLoader.requestAds( this.adsRequest );
+    if( this.oldAdTag_ === this.adTag_ ){
+        // if you play the same ad tag twice, Google will return an empty tag, thinking this was an error on your part
+        this.adsManager.destroy();
+        this.adsLoader.contentComplete();
+        this.request();
+        this.adsLoader.requestAds(this.adsRequest);
+    }
+    this.adsLoader.requestAds( this.adsRequest );
+    this.oldAdTag_ = this.adTag_;
 };
 
 myIMA.prototype.request = function () {
     // Request video ads.
-    console.log('request and this is', this);
+    this.adsRequest = null;
     this.adsRequest = new google.ima.AdsRequest();
     this.adsRequest.adTagUrl = this.adTag_;
 
     // Specify the linear and nonlinear slot sizes. This helps the SDK to
     // select the correct creative if multiple are returned.
-    this.adsRequest.linearAdSlotWidth = 640;
-    this.adsRequest.linearAdSlotHeight = 400;
-    this.adsRequest.nonLinearAdSlotWidth = 640;
-    this.adsRequest.nonLinearAdSlotHeight = 150;
-    this.adsLoader.requestAds( this.adsRequest );
-    //return this.adsRequest;
+    this.adsRequest.linearAdSlotWidth = this.adContainer_.style.width;
+    this.adsRequest.linearAdSlotHeight = this.adContainer_.style.height;
+    //this.adsRequest.nonLinearAdSlotWidth = 640;
+    //this.adsRequest.nonLinearAdSlotHeight = 150;
 };
 
 myIMA.prototype.init = function(){
     var self = this;
     var success = function(){
-        console.log('success this is', this);
         self.contain();
         self.loader();
         self.request();
     };
     var failure = function(){
-        //console.log('failure this is', this);
     };
     this.sdkLoader( success, failure );
 };
